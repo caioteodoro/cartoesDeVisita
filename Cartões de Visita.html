@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<style>
+
+body {
+	font-family: Tahoma;
+	font-size: 14px;
+	background-color: #567680;
+}
+
+#searchInput {
+    display: block;
+    width: 100%;
+    margin: 0px 30px 10px 10px;
+    padding: 12px;
+    font-size: 16px;
+    text-align: center;
+    border-radius: 10px; 
+    border: none;
+}
+
+.visitCard {
+	border-radius: 10px;
+	box-shadow: 1px 1px 5px 5px rgba(0, 0, 0, 0.05);
+}
+
+#mainTable {
+	border-radius: 10px;
+	background-color: #fff;
+	border-radius: 10px;
+	box-shadow: 1px 1px 5px 5px rgba(0, 0, 0, 0.07);
+}
+
+table {
+        border-collapse: separate;
+        width: 100%;
+    }
+
+    th, td {
+        padding: 8px;
+        text-align: center;
+    }
+    th {
+        
+    }
+    td:hover img {
+        display: block;
+    }
+    img {
+        display: none;
+        position: absolute;
+        z-index: 1;
+    }
+
+	</style>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Spreadsheet</title>
+	
+</head>
+<body>
+
+<input type="text" id="searchInput" placeholder="Digite aqui para buscar">
+<div id="mainTable">
+<table id="spreadsheet">
+    <thead>
+        <tr>
+            <th>País</th>
+            <th>Fornecedor</th>
+            <th>Nome</th>
+            <th>Função</th>
+            <th>E-mail</th>
+            <th>Telefone</th>
+            <th>Observações</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+<script>
+function createMailtoLink(email) {
+    const link = document.createElement('a');
+    link.href = `mailto:${email}`;
+    link.textContent = email;
+    return link;
+}
+
+fetch('https://raw.githubusercontent.com/caioteodoro/cartoesDeVisita/main/dadosFornecedores.csv')
+    .then(response => response.text())
+    .then(data => {
+        const rows = data.split('\n');
+        const tableBody = document.querySelector('#spreadsheet tbody');
+	
+	var name = "";
+
+        rows.forEach(row => {
+            const columns = row.split(';');
+            const tr = document.createElement('tr');
+		
+		var counter = 0;
+            columns.forEach(column => {
+		if (counter == 2) {
+			name = column;
+		} else if (counter == 3) {
+			const td = document.createElement('td');
+			const image = document.createElement('img');
+			image.src = "https://raw.githubusercontent.com/caioteodoro/cartoesDeVisita/main/Imagens/" + column
+			image.width = "400";
+    			image.className = "visitCard" 
+                	td.textContent = name;
+			if (column != "-") {
+				td.appendChild(image);
+			};
+                	tr.appendChild(td);
+		} else if (counter == 5) {
+			const td = document.createElement('td');
+			td.appendChild(createMailtoLink(column));
+                	tr.appendChild(td);
+		} else {
+			const td = document.createElement('td');
+                	td.textContent = column;
+                	tr.appendChild(td);
+		};
+		counter += 1;
+            });
+
+            tableBody.appendChild(tr);
+        });
+    })
+    .catch(error => console.error('Error fetching CSV:', error));
+
+document.getElementById('searchInput').addEventListener('input', function() {
+    const searchValue = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#spreadsheet tbody tr');
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        let rowMatch = false;
+        cells.forEach(cell => {
+            if (cell.textContent.toLowerCase().includes(searchValue)) {
+                rowMatch = true;
+            }
+        });
+        if (rowMatch) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+});
+</script>
+</div>
+
+</body>
+</html>
